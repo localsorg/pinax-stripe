@@ -74,24 +74,36 @@ class StripeAccountFromCustomerMixin(object):
     stripe_account_stripe_id.fget.short_description = "Stripe Account"
 
 
+class Product(UniquePerAccountStripeObject):
+    name = models.CharField(max_length=150)
+    statement_descriptor = models.TextField(blank=True)
+    metadata = JSONField(null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
 @python_2_unicode_compatible
 class Plan(UniquePerAccountStripeObject):
     amount = models.DecimalField(decimal_places=2, max_digits=9)
     currency = models.CharField(max_length=15, blank=False)
     interval = models.CharField(max_length=15)
     interval_count = models.IntegerField()
-    name = models.CharField(max_length=150)
-    statement_descriptor = models.TextField(blank=True)
     trial_period_days = models.IntegerField(null=True, blank=True)
     metadata = JSONField(null=True, blank=True)
 
+    product = models.ForeignKey("pinax_stripe.Product",
+                                related_name="plan_products",
+                                related_query_name="plan_product",
+                                on_delete=models.CASCADE)
+
     def __str__(self):
-        return "{} ({}{})".format(self.name, CURRENCY_SYMBOLS.get(self.currency, ""), self.amount)
+        return "{} ({}{})".format(self.product.name, CURRENCY_SYMBOLS.get(self.currency, ""), self.amount)
 
     def __repr__(self):
         return "Plan(pk={!r}, name={!r}, amount={!r}, currency={!r}, interval={!r}, interval_count={!r}, trial_period_days={!r}, stripe_id={!r})".format(
             self.pk,
-            self.name,
+            self.product.name,
             self.amount,
             self.currency,
             self.interval,
