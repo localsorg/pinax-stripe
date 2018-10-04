@@ -13,6 +13,7 @@ from .actions import (
     exceptions,
     invoices,
     plans,
+    products,
     sources,
     subscriptions,
     transfers
@@ -502,12 +503,18 @@ class PlanUpdatedWebhook(PlanWebhook):
     description = "Occurs whenever a plan is updated."
 
 
-class ProductCreatedWebhook(Webhook):
+class ProductWebhook(Webhook):
+
+    def process_webhook(self):
+        products.sync_product(self.event.message["data"]["object"], self.event)
+
+
+class ProductCreatedWebhook(ProductWebhook):
     name = "product.created"
     description = "Occurs whenever a product is created."
 
 
-class ProductUpdatedWebhook(Webhook):
+class ProductUpdatedWebhook(ProductWebhook):
     name = "product.updated"
     description = "Occurs whenever a product is updated."
 
