@@ -393,6 +393,10 @@ class Subscription(StripeAccountFromCustomerMixin, StripeObject):
     def total_amount(self):
         return self.plan.amount * self.quantity
 
+    @property
+    def items(self):
+        return SubscriptionItem.objects.filter(subscription=self)
+
     def plan_display(self):
         return self.plan.name
 
@@ -417,6 +421,22 @@ class Subscription(StripeAccountFromCustomerMixin, StripeObject):
             getattr(self, "plan", None),
             self.status,
             self.stripe_id,
+        )
+
+
+class SubscriptionItem(StripeObject):
+
+    created = models.DateTimeField(null=True, blank=True)
+    metadata = JSONField(null=True, blank=True)
+    plan = models.ForeignKey(Plan, on_delete=models.CASCADE)
+    quantity = models.IntegerField()
+    subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE)
+
+    def __repr__(self):
+        return "SubscriptionItem(pk={!r}, plan={!r}, subscription={!r})".format(
+            self.pk,
+            getattr(self, 'plan', None),
+            getattr(self, 'subscription', None)
         )
 
 

@@ -155,18 +155,43 @@ def sync_subscription_from_stripe_data(customer, subscription):
         current_period_start=utils.convert_tstamp(subscription["current_period_start"]),
         current_period_end=utils.convert_tstamp(subscription["current_period_end"]),
         ended_at=utils.convert_tstamp(subscription["ended_at"]),
-        plan=models.Plan.objects.get(stripe_id=subscription["plan"]["id"]),
-        quantity=subscription["quantity"],
         start=utils.convert_tstamp(subscription["start"]),
         status=subscription["status"],
         trial_start=utils.convert_tstamp(subscription["trial_start"]) if subscription["trial_start"] else None,
         trial_end=utils.convert_tstamp(subscription["trial_end"]) if subscription["trial_end"] else None
     )
+
+    if 'items' in subscription and len(subscription['items']['data']) > 1:
+        defaults['plan'] = models.Plan.objects.get(
+            stripe_id=subscription['items']['data'][0]['plan']['id'])
+        defaults['quantity'] = subscription['items']['data'][0]['quantity']
+    else:
+        defaults['plan'] = models.Plan.objects.get(
+            stripe_id=subscription['plan']['id'])
+        defaults['quantity'] = subscription['quantity']
+
     sub, created = models.Subscription.objects.get_or_create(
         stripe_id=subscription["id"],
         defaults=defaults
     )
     sub = utils.update_with_defaults(sub, defaults, created)
+
+    if 'items' in subscription and len(subscription['items']['data']) > 1:
+        for item in subscription['items']['data']:
+            defaults = dict(
+                created=utils.convert_tstamp(item['created']),
+                metadata=item['metadata'],
+                plan=models.Plan.objects.get(stripe_id=item['plan']['id']),
+                quantity=item['quantity'],
+                subscription=sub
+            )
+
+            sub_item, created = models.SubscriptionItem.objects.get_or_create(
+                stripe_id=item['id'],
+                defaults=defaults
+            )
+            utils.update_with_defaults(sub_item, defaults, created)
+
     return sub
 
 
