@@ -176,6 +176,8 @@ def sync_subscription_from_stripe_data(customer, subscription):
     )
     sub = utils.update_with_defaults(sub, defaults, created)
 
+    items_to_keep = []
+
     if 'items' in subscription and len(subscription['items']['data']) > 1:
         for item in subscription['items']['data']:
             defaults = dict(
@@ -191,6 +193,13 @@ def sync_subscription_from_stripe_data(customer, subscription):
                 defaults=defaults
             )
             utils.update_with_defaults(sub_item, defaults, created)
+
+            items_to_keep.append(item['id'])
+
+    models.SubscriptionItem.objects.exclude(
+        subscription=sub,
+        stripe_id__in=items_to_keep
+    ).delete()
 
     return sub
 
