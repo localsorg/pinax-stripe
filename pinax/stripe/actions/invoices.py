@@ -131,7 +131,8 @@ def sync_invoices_for_customer(customer):
     Args:
         customer: the customer for whom to synchronize all invoices
     """
-    for invoice in customer.stripe_customer.invoices().data:
+    invoices = stripe.Invoice.list(customer=customer.stripe_id)
+    for invoice in invoices:
         sync_invoice_from_stripe_data(invoice, send_receipt=False)
 
 
@@ -165,7 +166,7 @@ def sync_invoice_items(invoice, items):
             else:
                 stripe_subscription = subscriptions.retrieve(
                     invoice.customer,
-                    item["id"]
+                    item["subscription"]
                 )
                 item_subscription = subscriptions.sync_subscription_from_stripe_data(
                     invoice.customer,
