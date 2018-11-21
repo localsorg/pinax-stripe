@@ -196,8 +196,9 @@ def sync_subscription_from_stripe_data(customer, subscription):
 
             items_to_keep.append(item['id'])
 
-    models.SubscriptionItem.objects.exclude(
-        subscription=sub,
+    models.SubscriptionItem.objects.filter(
+        subscription=sub
+    ).exclude(
         stripe_id__in=items_to_keep
     ).delete()
 
