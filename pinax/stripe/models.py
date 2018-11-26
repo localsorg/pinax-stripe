@@ -4,18 +4,23 @@ from __future__ import unicode_literals
 import decimal
 
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import models, connection
 from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 import stripe
-from jsonfield.fields import JSONField
 
 from .conf import settings
 from .managers import ChargeManager, CustomerManager
 from .utils import CURRENCY_SYMBOLS
+
+
+if connection.vendor == 'postgresql':
+    from django.contrib.postgres.fields import JSONField
+else:
+    from jsonfield.fields import JSONField
 
 
 class StripeObject(models.Model):
