@@ -102,6 +102,9 @@ class Plan(UniquePerAccountStripeObject):
                                 related_query_name="plan_product",
                                 on_delete=models.CASCADE)
 
+    billing_scheme = models.CharField(max_length=15, default='per_unit')
+    usage_type = models.CharField(max_length=15, default='licensed')
+
     def __str__(self):
         return "{} ({}{})".format(self.product.name, CURRENCY_SYMBOLS.get(self.currency, ""), self.amount)
 

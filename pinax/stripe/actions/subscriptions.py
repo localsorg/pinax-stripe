@@ -55,7 +55,8 @@ def create(customer, plan, quantity=None, trial_days=None, token=None, coupon=No
     subscription_params["stripe_account"] = customer.stripe_account_stripe_id
     subscription_params["customer"] = customer.stripe_id
     subscription_params["plan"] = plan
-    subscription_params["quantity"] = quantity
+    if plan.usage_type == 'licensed':
+        subscription_params["quantity"] = quantity
     subscription_params["coupon"] = coupon
     subscription_params["tax_percent"] = tax_percent
     resp = stripe.Subscription.create(**subscription_params)
@@ -221,7 +222,10 @@ def update(subscription, plan=None, quantity=None, prorate=True, coupon=None, ch
     if plan:
         stripe_subscription.plan = plan
     if quantity:
-        stripe_subscription.quantity = quantity
+        if plan.usage_type == 'licensed':
+            stripe_subscription.quantity = quantity
+        else:
+            delattr(stripe_subscription, 'quantity')
     if not prorate:
         stripe_subscription.prorate = False
     if coupon:

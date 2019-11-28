@@ -32,6 +32,10 @@ def sync_plan(plan, event=None):
         'trial_period_days': plan['trial_period_days'],
         'metadata': plan['metadata']
     }
+    if 'billing_scheme' in plan:
+        defaults['billing_scheme'] = plan['billing_scheme']
+    if 'usage_type' in plan:
+        defaults['usage_type'] = plan['usage_type']
 
     obj, created = models.Plan.objects.get_or_create(
         stripe_id=plan['id'],
