@@ -8,6 +8,12 @@ import stripe
 from .. import hooks, models, utils
 
 
+class Billing_Thresholds:
+    def __init__(self, amount_gte=0, reset_billing_cycle_anchor=False):
+        self.amount_gte: int = amount_gte
+        self.reset_billing_cycle_anchor: boolean = reset_billing_cycle_anchor
+
+
 def cancel(subscription, at_period_end=True):
     """
     Cancels a subscription
@@ -25,7 +31,14 @@ def cancel(subscription, at_period_end=True):
     return sync_subscription_from_stripe_data(subscription.customer, sub)
 
 
-def create(customer, plan, quantity=None, trial_days=None, token=None, coupon=None, tax_percent=None):
+def create(customer,
+           plan,
+           quantity=None,
+           trial_days=None,
+           token=None,
+           coupon=None,
+           tax_percent=None,
+           billing_thresholds: Billing_Thresholds=None):
     """
     Creates a subscription for the given customer
 
@@ -56,7 +69,9 @@ def create(customer, plan, quantity=None, trial_days=None, token=None, coupon=No
     subscription_params["customer"] = customer.stripe_id
     subscription_params["plan"] = plan
     if plan.usage_type == 'licensed':
-        subscription_params["quantity"] = quantity
+        subscription_params['quantity'] = quantity
+    if billing_thresholds is not None:
+        subscription_params['billing_thresholds'] = billing_thresholds.__dict__
     subscription_params["coupon"] = coupon
     subscription_params["tax_percent"] = tax_percent
     resp = stripe.Subscription.create(**subscription_params)
@@ -206,7 +221,13 @@ def sync_subscription_from_stripe_data(customer, subscription):
     return sub
 
 
-def update(subscription, plan=None, quantity=None, prorate=True, coupon=None, charge_immediately=False):
+def update(subscription,
+           plan=None,
+           quantity=None,
+           prorate=True,
+           coupon=None,
+           charge_immediately=False,
+           billing_thresholds=None):
     """
     Updates a subscription
 
@@ -226,6 +247,8 @@ def update(subscription, plan=None, quantity=None, prorate=True, coupon=None, ch
             stripe_subscription.quantity = quantity
         else:
             delattr(stripe_subscription, 'quantity')
+    if billing_thresholds is not None:
+        stripe.subscription.billing_thresholds = billing_thresholds
     if not prorate:
         stripe_subscription.prorate = False
     if coupon:
