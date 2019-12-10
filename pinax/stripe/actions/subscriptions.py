@@ -82,7 +82,7 @@ def create(customer,
 def create_usage_record(subscription_item,
                         quantity=1,
                         timestamp=timezone.now().timestamp(),
-                        action='increment')
+                        action='increment'):
 
     resp = stripe.SubscriptionItem.create_usage_record(
         subscription_item.stripe_id,
