@@ -440,6 +440,10 @@ class SubscriptionItem(StripeObject):
     quantity = models.IntegerField()
     subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE)
 
+    @property
+    def stripe_subscription_item(self):
+        return stripe.SubscriptionItem.retrieve(self.stripe_id)
+
     def __repr__(self):
         return "SubscriptionItem(pk={!r}, plan={!r}, subscription={!r})".format(
             self.pk,
@@ -447,6 +451,19 @@ class SubscriptionItem(StripeObject):
             getattr(self, 'subscription', None)
         )
 
+
+class UsageRecord(StripeObject):
+
+    quantity = models.IntegerField()
+    timestamp = models.DateTimeField(null=True, blank=True)
+    subscription_item = models.ForeignKey(SubscriptionItem, on_delete=models.CASCADE)
+
+    def __repr__(self):
+        return "UsageRecord(pk={!r}, subscription_item={!r}, quantity={!r})".format(
+            self.pk,
+            getattr(self, 'subscription_item', None),
+            getattr(self, 'quantity', 0)
+        )
 
 class Invoice(StripeAccountFromCustomerMixin, StripeObject):
 
