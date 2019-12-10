@@ -79,6 +79,38 @@ def create(customer,
     return sync_subscription_from_stripe_data(customer, resp)
 
 
+def create_usage_record(subscription_item,
+                        quantity=1,
+                        timestamp=timezone.now().timestamp(),
+                        action='increment')
+
+    resp = stripe.SubscriptionItem.create_usage_record(
+        subscription_item.stripe_id,
+        quantity=quantity,
+        timestamp=timestamp,
+        action=action
+    )
+
+    return sync_usage_record_from_stripe_data(resp)
+
+
+def sync_usage_record_from_stripe_data(usage_record):
+    sub_item = models.SubscriptionItem.objects.get(stripe_id=usage_record['subscription_item'])
+
+    defaults = {
+        'quantity': usage_record['quantity'],
+        'timestamp': utils.convert_tstamp(usage_record['timestamp']),
+        'subscription_item': sub_item,
+    }
+
+    obj, created = models.UsageRecord.objects.get_or_create(
+        stripe_id=usage_record['id'],
+        defaults=defaults
+    )
+
+    return utils.update_with_defaults(obj, defaults, created)
+
+
 def has_active_subscription(customer):
     """
     Checks if the given customer has an active subscription
