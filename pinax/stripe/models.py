@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-
 import decimal
 
+import stripe
 from django.core.exceptions import ValidationError
 from django.db import models, connection
 from django.utils import timezone
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
-
-import stripe
+from six import python_2_unicode_compatible
 
 from .conf import settings
 from .managers import ChargeManager, CustomerManager
