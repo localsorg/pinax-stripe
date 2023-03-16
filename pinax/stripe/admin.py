@@ -356,7 +356,6 @@ class PlanAdmin(ModelAdmin):
     raw_id_fields = ["stripe_account"]
     list_display = [
         "stripe_id",
-        "name",
         "amount",
         "currency",
         "interval",
