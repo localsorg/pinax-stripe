@@ -1,4 +1,3 @@
-import django
 from django.shortcuts import redirect
 
 from .actions import customers, subscriptions
@@ -19,9 +18,6 @@ class ActiveSubscriptionMiddleware(MixinorObject):
 
     def process_request(self, request):
         is_authenticated = request.user.is_authenticated
-        if django.VERSION < (1, 10):
-            is_authenticated = is_authenticated()
-
         if is_authenticated and not request.user.is_staff:
             url_name = resolve(request.path).url_name
             if url_name not in settings.PINAX_STRIPE_SUBSCRIPTION_REQUIRED_EXCEPTION_URLS:

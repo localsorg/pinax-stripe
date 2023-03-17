@@ -1,7 +1,5 @@
 import os
 
-import django
-
 DEBUG = True
 USE_TZ = True
 TIME_ZONE = "UTC"
@@ -18,8 +16,6 @@ MIDDLEWARE = [  # from 2.0 onwards, only MIDDLEWARE is used
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
 ]
-if django.VERSION < (1, 10):
-    MIDDLEWARE_CLASSES = MIDDLEWARE
 ROOT_URLCONF = "pinax.stripe.tests.urls"
 INSTALLED_APPS = [
     "django.contrib.admin",

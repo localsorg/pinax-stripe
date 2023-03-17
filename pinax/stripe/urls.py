@@ -1,4 +1,4 @@
-from django.urls import re_path
+from django.urls import path
 
 from .views import (
     InvoiceListView,
@@ -14,17 +14,19 @@ from .views import (
 )
 
 urlpatterns = [
-    re_path(r"^subscriptions/$", SubscriptionListView.as_view(), name="pinax_stripe_subscription_list"),
-    re_path(r"^subscriptions/create/$", SubscriptionCreateView.as_view(), name="pinax_stripe_subscription_create"),
-    re_path(r"^subscriptions/(?P<pk>\d+)/delete/$", SubscriptionDeleteView.as_view(), name="pinax_stripe_subscription_delete"),
-    re_path(r"^subscriptions/(?P<pk>\d+)/update/$", SubscriptionUpdateView.as_view(), name="pinax_stripe_subscription_update"),
+    path("subscriptions/", SubscriptionListView.as_view(), name="pinax_stripe_subscription_list"),
+    path("subscriptions/create/", SubscriptionCreateView.as_view(), name="pinax_stripe_subscription_create"),
+    path("subscriptions/<int:pk>/delete/", SubscriptionDeleteView.as_view(), name="pinax_stripe_subscription_delete"),
+    path("subscriptions/<int:pk>/update/", SubscriptionUpdateView.as_view(), name="pinax_stripe_subscription_update"),
 
-    re_path(r"^payment-methods/$", PaymentMethodListView.as_view(), name="pinax_stripe_payment_method_list"),
-    re_path(r"^payment-methods/create/$", PaymentMethodCreateView.as_view(), name="pinax_stripe_payment_method_create"),
-    re_path(r"^payment-methods/(?P<pk>\d+)/delete/$", PaymentMethodDeleteView.as_view(), name="pinax_stripe_payment_method_delete"),
-    re_path(r"^payment-methods/(?P<pk>\d+)/update/$", PaymentMethodUpdateView.as_view(), name="pinax_stripe_payment_method_update"),
+    path("payment-methods/", PaymentMethodListView.as_view(), name="pinax_stripe_payment_method_list"),
+    path("payment-methods/create/", PaymentMethodCreateView.as_view(), name="pinax_stripe_payment_method_create"),
+    path("payment-methods/<int:pk>/delete/", PaymentMethodDeleteView.as_view(),
+         name="pinax_stripe_payment_method_delete"),
+    path("payment-methods/<int:pk>/update/", PaymentMethodUpdateView.as_view(),
+         name="pinax_stripe_payment_method_update"),
 
-    re_path(r"^invoices/$", InvoiceListView.as_view(), name="pinax_stripe_invoice_list"),
+    path("invoices/", InvoiceListView.as_view(), name="pinax_stripe_invoice_list"),
 
-    re_path(r"^webhook/$", Webhook.as_view(), name="pinax_stripe_webhook"),
+    path("webhook/", Webhook.as_view(), name="pinax_stripe_webhook"),
 ]

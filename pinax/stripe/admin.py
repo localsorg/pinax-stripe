@@ -124,6 +124,7 @@ class AccountListFilter(admin.SimpleListFilter):
 
 class PrefetchingChangeList(ChangeList):
     """A custom changelist to prefetch related fields."""
+
     def get_queryset(self, request):
         qs = super(PrefetchingChangeList, self).get_queryset(request)
 
@@ -137,6 +138,7 @@ class PrefetchingChangeList(ChangeList):
 
 
 class ModelAdmin(admin.ModelAdmin):
+
     def has_add_permission(self, request, obj=None):
         return False
 
@@ -159,6 +161,7 @@ class ModelAdmin(admin.ModelAdmin):
         return PrefetchingChangeList
 
 
+@admin.register(Charge)
 class ChargeAdmin(ModelAdmin):
     list_display = [
         "stripe_id",
@@ -175,10 +178,10 @@ class ChargeAdmin(ModelAdmin):
         "customer",
     ]
     search_fields = [
-        "stripe_id",
-        "customer__stripe_id",
-        "invoice__stripe_id",
-    ] + customer_search_fields()
+                        "stripe_id",
+                        "customer__stripe_id",
+                        "invoice__stripe_id",
+                    ] + customer_search_fields()
     list_filter = [
         "paid",
         "disputed",
@@ -198,6 +201,7 @@ class ChargeAdmin(ModelAdmin):
         return qs.prefetch_related("customer__user", "customer__users")
 
 
+@admin.register(EventProcessingException)
 class EventProcessingExceptionAdmin(ModelAdmin):
     list_display = [
         "message",
@@ -214,6 +218,7 @@ class EventProcessingExceptionAdmin(ModelAdmin):
     ]
 
 
+@admin.register(Event)
 class EventAdmin(ModelAdmin):
     raw_id_fields = ["customer", "stripe_account"]
     list_display = [
@@ -233,11 +238,11 @@ class EventAdmin(ModelAdmin):
         AccountListFilter,
     ]
     search_fields = [
-        "stripe_id",
-        "customer__stripe_id",
-        "validated_message",
-        "=stripe_account__stripe_id",
-    ] + customer_search_fields()
+                        "stripe_id",
+                        "customer__stripe_id",
+                        "validated_message",
+                        "=stripe_account__stripe_id",
+                    ] + customer_search_fields()
 
 
 class SubscriptionInline(admin.TabularInline):
@@ -258,11 +263,14 @@ class BitcoinReceiverInline(admin.TabularInline):
     max_num = 0
 
 
+@admin.display(
+    description="Subscription Status"
+)
 def subscription_status(obj):
     return ", ".join([subscription.status for subscription in obj.subscription_set.all()])
-subscription_status.short_description = "Subscription Status"  # noqa
 
 
+@admin.register(Customer)
 class CustomerAdmin(ModelAdmin):
     raw_id_fields = ["user", "stripe_account"]
     list_display = [
@@ -283,8 +291,8 @@ class CustomerAdmin(ModelAdmin):
         AccountListFilter,
     ]
     search_fields = [
-        "stripe_id",
-    ] + user_search_fields()
+                        "stripe_id",
+                    ] + user_search_fields()
     inlines = [
         SubscriptionInline,
         CardInline,
@@ -298,11 +306,16 @@ class InvoiceItemInline(admin.TabularInline):
     max_num = 0
 
 
+@admin.display(
+    description="Customer Has Card"
+)
 def customer_has_card(obj):
     return obj.customer.card_set.exclude(fingerprint="").exists()
-customer_has_card.short_description = "Customer Has Card"  # noqa
 
 
+@admin.display(
+    description="Customer"
+)
 def customer_user(obj):
     if not obj.customer.user:
         return ""
@@ -313,9 +326,9 @@ def customer_user(obj):
         username,
         email
     )
-customer_user.short_description = "Customer"  # noqa
 
 
+@admin.register(Invoice)
 class InvoiceAdmin(ModelAdmin):
     raw_id_fields = ["customer"]
     list_display = [
@@ -330,9 +343,9 @@ class InvoiceAdmin(ModelAdmin):
         "total"
     ]
     search_fields = [
-        "stripe_id",
-        "customer__stripe_id",
-    ] + customer_search_fields()
+                        "stripe_id",
+                        "customer__stripe_id",
+                    ] + customer_search_fields()
     list_filter = [
         InvoiceCustomerHasCardListFilter,
         "paid",
@@ -352,6 +365,7 @@ class InvoiceAdmin(ModelAdmin):
     ]
 
 
+@admin.register(Plan)
 class PlanAdmin(ModelAdmin):
     raw_id_fields = ["stripe_account"]
     list_display = [
@@ -364,16 +378,17 @@ class PlanAdmin(ModelAdmin):
         "stripe_account",
     ]
     search_fields = [
-        "stripe_id",
-        "name",
-        "=stripe_account__stripe_id",
-    ] + customer_search_fields()
+                        "stripe_id",
+                        "name",
+                        "=stripe_account__stripe_id",
+                    ] + customer_search_fields()
     list_filter = [
         "currency",
         AccountListFilter,
     ]
 
 
+@admin.register(Coupon)
 class CouponAdmin(ModelAdmin):
     list_display = [
         "stripe_id",
@@ -424,6 +439,7 @@ class TransferAdmin(ModelAdmin):
     ]
 
 
+@admin.register(Account)
 class AccountAdmin(ModelAdmin):
     raw_id_fields = ["user"]
     list_display = [
@@ -441,6 +457,7 @@ class AccountAdmin(ModelAdmin):
     ]
 
 
+@admin.register(BankAccount)
 class BankAccountAdmin(ModelAdmin):
     raw_id_fields = ["account"]
     list_display = [
@@ -459,6 +476,7 @@ class BankAccountAdmin(ModelAdmin):
     ]
 
 
+@admin.register(UserAccount)
 class UserAccountAdmin(ModelAdmin):
     raw_id_fields = ["user", "customer"]
     list_display = ["user", "customer"]
@@ -466,15 +484,3 @@ class UserAccountAdmin(ModelAdmin):
         "=customer__stripe_id",
         "=user__email",
     ]
-
-
-admin.site.register(Account, AccountAdmin)
-admin.site.register(BankAccount, BankAccountAdmin)
-admin.site.register(Charge, ChargeAdmin)
-admin.site.register(Coupon, CouponAdmin)
-admin.site.register(Event, EventAdmin)
-admin.site.register(EventProcessingException, EventProcessingExceptionAdmin)
-admin.site.register(Invoice, InvoiceAdmin)
-admin.site.register(Customer, CustomerAdmin)
-admin.site.register(Plan, PlanAdmin)
-admin.site.register(UserAccount, UserAccountAdmin)

@@ -1,10 +1,9 @@
 import datetime
 import time
 
+import stripe
 from django import forms
 from django.utils.translation import gettext_lazy as _
-
-import stripe
 from ipware.ip import get_ip, get_real_ip
 
 from .actions import accounts
@@ -13,7 +12,6 @@ from .models import Plan
 
 
 class PaymentMethodForm(forms.Form):
-
     expMonth = forms.IntegerField(min_value=1, max_value=12)
     expYear = forms.IntegerField(min_value=2015, max_value=9999)
 
@@ -37,7 +35,6 @@ The following forms are sufficient for the US and Canada.
 
 # Note: undocumented, determined through experimentation
 STRIPE_MINIMUM_DOB = datetime.date(1900, 1, 1)
-
 
 ACCEPTED_DOCUMENT_CONTENT_TYPES = (
     "image/jpg", "image/jpeg", "image/png"
@@ -304,7 +301,7 @@ class InitialCustomAccountForm(DynamicManagedAccountForm):
         return extract_ipaddress(self.request)
 
     def get_user_agent(self):
-        return self.request.META.get("HTTP_USER_AGENT")
+        return self.request.headers.get("user-agent")
 
     def save(self):
         """
